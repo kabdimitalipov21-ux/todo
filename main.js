@@ -1,17 +1,20 @@
 let todos = [
   { id: 1, title: "Купить хлеба", completed: true },
-  { id: 2, title: "Купить хлеба", completed: true },
-  { id: 3, title: "Купить хлеба", completed: false },
+  { id: 2, title: "Купить молоко", completed: true },
+  { id: 3, title: "Сделать урок", completed: false },
 ];
 
 const btn = document.querySelector(".create");
 const inp = document.querySelector(".create-input");
 const list = document.querySelector(".list");
 const delAll = document.querySelector(".del-all");
+const themeBtn = document.querySelector(".theme-btn");
 
-delAll.addEventListener("click", (e) => {
-  e.preventDefault();
+themeBtn.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+});
 
+delAll.addEventListener("click", () => {
   todos = [];
   render();
 });
@@ -19,66 +22,109 @@ delAll.addEventListener("click", (e) => {
 btn.addEventListener("click", (e) => {
   e.preventDefault();
 
-  // после того как нажали кнопку добавляем в массив новый todo
+  if (inp.value.trim() === "") return;
+
   todos.push({
     id: Date.now(),
     title: inp.value,
     completed: false,
   });
 
-  // вызываем render, но он будет работать с уже обновленным массивом
+  inp.value = "";
   render();
 });
 
-// render - проходится по массиву todos и добавляет в HTML в тег div.list новые элементы (по очереди)
 const render = () => {
   list.innerHTML = "";
 
   todos.forEach((el) => {
-    // data-id - указываю в атрибутах id самого todo
     list.innerHTML += `
-    <div class="list-item">
-          <input type="checkbox" name="" ${el.completed ? "checked" : ""} id="" data-id="${el.id}" class="complete-todo" />
-          <p ${el.completed ? "class='title-completed'" : ""}>${el.title}</p>
-          <button>Редактировать</button>
-          <button data-id="${el.id}" class="del-todo">Удалить</button>
-        </div>
+      <div class="list-item add-animation">
+        <input 
+          type="checkbox" 
+          ${el.completed ? "checked" : ""} 
+          data-id="${el.id}" 
+          class="complete-todo" 
+        />
+
+        <p ${el.completed ? "class='title-completed'" : ""} data-id="${el.id}">
+          ${el.title}
+        </p>
+
+        <button class="edit-todo" data-id="${el.id}">Редактировать</button>
+        <button class="del-todo" data-id="${el.id}">Удалить</button>
+      </div>
     `;
   });
 
-  // вытаскиваю абсолютно все кнопки "Удалить"
-  const delTodos = document.querySelectorAll(".del-todo");
-  // вытаскиваю абсолютно все checkbox
-  const completeTodos = document.querySelectorAll(".complete-todo");
-
-  completeTodos.forEach((el) => {
-    el.addEventListener("click", (e) => {
+  document.querySelectorAll(".complete-todo").forEach((el) => {
+    el.addEventListener("click", () => {
       todos = todos.map((todo) => {
-        if (Number(todo.id) === Number(el.getAttribute("data-id"))) {
+        if (Number(todo.id) === Number(el.dataset.id)) {
           return { ...todo, completed: !todo.completed };
         }
         return todo;
       });
 
-      console.log(todos);
       render();
     });
   });
 
-  // прохожусь по ним
-  delTodos.forEach((el) => {
-    // на каждое подвязываю обработчик события
-    el.addEventListener("click", (e) => {
-      // фильтрация (убирает элемент определенный)
-      todos = todos.filter(
-        // el.getAttribute('data-id') - позволяет вытащить значение которое мы ранее задали
-        (todo) => Number(todo.id) !== Number(el.getAttribute("data-id")),
-      );
-      // заново рисуем
+  document.querySelectorAll(".del-todo").forEach((el) => {
+    el.addEventListener("click", () => {
+      todos = todos.filter((todo) => Number(todo.id) !== Number(el.dataset.id));
       render();
+    });
+  });
+
+  document.querySelectorAll(".edit-todo").forEach((el) => {
+    el.addEventListener("click", () => {
+      const id = Number(el.dataset.id);
+      const item = el.parentNode;
+      const p = document.querySelector(`p[data-id="${id}"]`);
+      const delBtn = document.querySelector(`.del-todo[data-id="${id}"]`);
+
+      item.classList.add("edit-animation");
+
+      const input = document.createElement("input");
+      const saveBtn = document.createElement("button");
+      const resetBtn = document.createElement("button");
+
+      input.className = "edit-input";
+      input.value = p.textContent.trim();
+
+      saveBtn.textContent = "Сохранить";
+      saveBtn.className = "save-btn";
+
+      resetBtn.textContent = "Сбросить";
+      resetBtn.className = "reset-btn";
+
+      resetBtn.onclick = () => {
+        render();
+      };
+
+      saveBtn.onclick = () => {
+        item.classList.add("save-animation");
+
+        setTimeout(() => {
+          todos = todos.map((todo) => {
+            if (todo.id === id) {
+              return { ...todo, title: input.value };
+            }
+            return todo;
+          });
+
+          render();
+        }, 300);
+      };
+
+      item.append(input, saveBtn, resetBtn);
+
+      p.remove();
+      el.remove();
+      delBtn.remove();
     });
   });
 };
 
-// первая отрисовка (если в массиве уже есть todo)
 render();

@@ -3,20 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>TODO list</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <div class="container">
-      <h1>TODO list</h1>
-      <form action="">
-        <input class="create-input" type="text" />
-        <button class="create">Создать todo</button>
+      <button class="theme-btn" type="button">🌙 Фон өзгөртүү</button>
 
+      <h1>TODO list</h1>
+
+      <form>
+        <input class="create-input" type="text" placeholder="Жаңы todo жаз..." />
+        <button class="create">Создать todo</button>
         <button type="button" class="del-all">Удалить все</button>
       </form>
 
       <div class="list"></div>
     </div>
+
     <script src="./main.js"></script>
   </body>
+</html>
